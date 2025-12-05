@@ -7,4 +7,6 @@ type UserRepository interface {
 	UpdateUserPass(ctx context.Context, newUserPass string) error
 	DeleteUser(ctx context.Context, userName string) error
 	GetByNme(ctx context.Context, userName string) (*User, error)
+	CheckByName(ctx context.Context, userName string) (bool, error)
+	CreateUser(ctx context.Context, newUser *User) error
 }
