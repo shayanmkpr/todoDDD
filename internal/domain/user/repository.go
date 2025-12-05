@@ -1,8 +1,10 @@
 package user
 
+import "context"
+
 type UserRepository interface {
-	UpdateUserName(newUserName string) error
-	UpdateUserPass(newUserPass string) error
-	DeleteUser(userName string) error
-	GetByNme(userName string) (*User, error)
+	UpdateUserName(ctx context.Context, newUserName string) error
+	UpdateUserPass(ctx context.Context, newUserPass string) error
+	DeleteUser(ctx context.Context, userName string) error
+	GetByNme(ctx context.Context, userName string) (*User, error)
 }

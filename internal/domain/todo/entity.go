@@ -1,11 +1,14 @@
 package todo
 
 type Todo struct {
-	Tasks []*Tasks
+	TodoID int `json:"todo_id"`
+	Tasks  []*Task
+	UserID int `json:"user_id"`
 }
 
-type Tasks struct {
-	Title  string
-	Status string
-	body   string
+type Task struct {
+	TaksID int    `json:"task_id" binding:"required"`
+	Title  string `json:"title"`
+	Status string `json:"status"`
+	Body   string `json:"body"`
 }
