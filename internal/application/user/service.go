@@ -41,9 +41,21 @@ func (s *Service) Register(ctx context.Context, userName, pass string) (*user.Us
 }
 
 func (s *Service) Login(ctx context.Context, userName, pass string) (string, error) {
-	// check user and hashed pass with db.
+	token := "token"
+	// Get the user
+	user, err := s.repo.GetByNme(ctx, userName)
+	if err != nil {
+		return "", err
+	}
 
-	// give back the toekn
+	correctPass, err := user.CheckPassword(pass)
+	if err != nil {
+		return "", err
+	}
 
-	return "token", nil
+	if correctPass {
+		// generate the token
+		return token, nil
+	}
+	return token, nil
 }
