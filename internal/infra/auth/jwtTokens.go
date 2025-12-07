@@ -13,13 +13,15 @@ type Claims struct {
 	ExpiresAt time.Time
 }
 
-var AccessTokenSecret string = os.Getenv("ACCESS_TOKEN_SECRET")
-var RefreshTokenSecret string = os.Getenv("REFRESH_TOKEN_SECRET")
+var (
+	AccessTokenSecret  string = os.Getenv("ACCESS_TOKEN_SECRET")
+	RefreshTokenSecret string = os.Getenv("REFRESH_TOKEN_SECRET")
+)
 
 func GenerateAccessToken(secret, userID string) (string, error) {
 	now := time.Now()
 
-	claims := Claims{
+	claims := &Claims{
 		UserID:    userID,
 		IssuedAt:  now,
 		ExpiresAt: now.Add(15 * time.Minute), // typical access token lifetime
@@ -31,7 +33,7 @@ func GenerateAccessToken(secret, userID string) (string, error) {
 func GenerateRefreshToken(secret, userID string) (string, error) {
 	now := time.Now()
 
-	claims := Claims{
+	claims := &Claims{
 		UserID:    userID,
 		IssuedAt:  now,
 		ExpiresAt: now.Add(30 * 24 * time.Hour), // 30 days
@@ -40,23 +42,22 @@ func GenerateRefreshToken(secret, userID string) (string, error) {
 	return GenerateToken(secret, userID, claims)
 }
 
-func GenerateToken(secret, userID string, claims Claims) (string, error) {
+func GenerateToken(secret, userID string, claims *Claims) (string, error) {
 	jwtClaims := jwt.MapClaims{
 		"user_id": claims.UserID,
-		"iat":     claims.IssuedAt,
-		"exp":     claims.ExpiresAt,
+		"iat":     claims.IssuedAt.Unix(),
+		"exp":     claims.ExpiresAt.Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)
-	return token.SignedString(secret)
+	return token.SignedString([]byte(secret))
 }
 
-func ParseToken(secret, tokenStr string, claims Claims) (*Claims, error) {
-
+func ParseToken(secret, tokenStr string) (*Claims, error) {
 	jwtClaims := jwt.MapClaims{}
 
 	t, err := jwt.ParseWithClaims(tokenStr, jwtClaims,
-		func(t *jwt.Token) (interface{}, error) { //key function
+		func(t *jwt.Token) (interface{}, error) { // key function
 			return []byte(secret), nil
 		},
 	)
