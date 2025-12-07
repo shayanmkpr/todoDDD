@@ -1,4 +1,4 @@
-package authenticatoin_jwt
+package auth_jwt
 
 import (
 	"testing"

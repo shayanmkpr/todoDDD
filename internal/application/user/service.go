@@ -15,8 +15,9 @@ func NewService(r user.UserRepository) *Service {
 	return &Service{repo: r}
 }
 
-// Register registers a new user.
+// Register registers a new user. But we are not giving them a token right away.
 func (s *Service) Register(ctx context.Context, userName, pass string) (*user.User, error) {
+
 	// check if user exists
 	userNameExists, err := s.repo.CheckByName(ctx, userName)
 	if err != nil {
@@ -33,27 +34,25 @@ func (s *Service) Register(ctx context.Context, userName, pass string) (*user.Us
 	}
 
 	// store it and give it an ID
-	if err := s.repo.CreateUser(ctx, u); err != nil {
+	if err := s.repo.SaveUser(ctx, u); err != nil {
 		return nil, err
 	}
-
 	return u, nil
 }
 
 func (s *Service) Login(ctx context.Context, userName, pass string) (string, error) {
-	token := "token"
 	// Get the user
-	user, err := s.repo.GetByNme(ctx, userName)
+	user, err := s.repo.GetByName(ctx, userName)
 	if err != nil {
 		return "", err
 	}
 
-	correctPass, err := user.CheckPassword(pass)
+	isCorrectPass, err := user.CheckPassword(pass)
 	if err != nil {
 		return "", err
 	}
 
-	if correctPass {
+	if isCorrectPass {
 		// generate the token
 		return token, nil
 	}
