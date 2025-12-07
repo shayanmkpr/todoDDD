@@ -3,11 +3,13 @@ package auth_jwt
 import (
 	"testing"
 	"time"
+
+	"todoDB/internal/domain/auth"
 )
 
 func TestGenerateToken(t *testing.T) {
 	secret := AccessTokenSecret
-	claims := &Claims{
+	claims := &auth.Claims{
 		UserID:    "123",
 		IssuedAt:  time.Now(),
 		ExpiresAt: time.Now().Add(time.Hour),
@@ -25,7 +27,7 @@ func TestGenerateToken(t *testing.T) {
 
 func TestParseToken(t *testing.T) {
 	secret := AccessTokenSecret
-	claims := &Claims{
+	claims := &auth.Claims{
 		UserID:    "abc",
 		IssuedAt:  time.Now(),
 		ExpiresAt: time.Now().Add(2 * time.Hour),

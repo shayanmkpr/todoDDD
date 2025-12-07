@@ -1,6 +1,8 @@
 package auth_jwt
 
 import (
+	"context"
+	"os"
 	"time"
 
 	"todoDB/internal/domain/auth"
@@ -14,7 +16,12 @@ func NewAuthRepository() auth.AuthenticationRepo {
 	return &authRepository{}
 }
 
-func (auth_ptr *authRepository) GenerateAccessToken(secret, userID string) (string, error) {
+var (
+	AccessTokenSecret  string = os.Getenv("ACCESS_TOKEN_SECRET")
+	RefreshTokenSecret string = os.Getenv("REFRESH_TOKEN_SECRET")
+)
+
+func (auth_ptr *authRepository) GenerateAccessToken(ctx context.Context, secret, userID string) (string, error) {
 	now := time.Now()
 
 	claims := &auth.Claims{
@@ -26,7 +33,7 @@ func (auth_ptr *authRepository) GenerateAccessToken(secret, userID string) (stri
 	return GenerateToken(secret, userID, claims)
 }
 
-func (auth_ptr *authRepository) GenerateRefreshToken(secret, userID string) (string, error) {
+func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret, userID string) (string, error) {
 	now := time.Now()
 
 	claims := &auth.Claims{
@@ -38,16 +45,12 @@ func (auth_ptr *authRepository) GenerateRefreshToken(secret, userID string) (str
 	return GenerateToken(secret, userID, claims)
 }
 
-func (auth_ptr *authRepository) ValidateAccessToken(secret, tokenStr string) (bool, error) {
+func (auth_ptr *authRepository) ValidateToken(ctx context.Context, secret, tokenStr string) (bool, error) { // checks if the token is singed with the input secret
 	_, err := ParseToken(secret, tokenStr)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
-}
-
-func (auth_ptr *authRepository) ValidateRefreshToken(secret, tokenStr string) (bool, error) {
-	return false, nil
 }
 
 func GenerateToken(secret, userID string, claims *auth.Claims) (string, error) {

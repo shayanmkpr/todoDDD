@@ -9,8 +9,7 @@ type RefreshTokenRepo interface { // for postgres
 }
 
 type AuthenticationRepo interface {
-	GenerateAccessToken(secret, userID string) (string, error)
-	GenerateRefreshToken(secret, userID string) (string, error)
-	ValidateAccessToken(secret, toeknStr string) (bool, error)
-	ValidateRefreshToken(secret, toeknStr string) (bool, error)
+	GenerateAccessToken(ctx context.Context, secret, userID string) (string, error)
+	GenerateRefreshToken(ctx context.Context, secret, userID string) (string, error)
+	ValidateToken(ctx context.Context, secret, toeknStr string) (bool, error)
 }
