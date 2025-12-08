@@ -1,18 +1,18 @@
-package user
+package api
 
 import (
 	"net/http"
 
-	app "yourapp/internal/application/user"
+	application "todoDB/internal/application/user"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	service *app.Service
+	service *application.UserService
 }
 
-func NewHandler(s *app.Service) *Handler {
+func NewHandler(s *application.UserService) *Handler {
 	return &Handler{service: s}
 }
 
@@ -27,13 +27,14 @@ type loginRequest struct {
 }
 
 func (h *Handler) Register(c *gin.Context) {
+
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	user, err := h.service.Register(c.Request.Context(), req.Email, req.Password)
+	user, err := h.service.Register(c.Request.Context(), req.UserName, req.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

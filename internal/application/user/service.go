@@ -1,4 +1,4 @@
-package user
+package application
 
 import (
 	"context"
@@ -28,7 +28,6 @@ func NewService(r user.UserRepository, a auth.AuthenticationRepo) *UserService {
 
 // Register registers a new user. But we are not giving them a token right away.
 func (s *UserService) Register(ctx context.Context, userName, pass string) (*user.User, error) {
-
 	// check if user exists
 	userNameExists, err := s.userRepo.CheckByName(ctx, userName)
 	if err != nil {
