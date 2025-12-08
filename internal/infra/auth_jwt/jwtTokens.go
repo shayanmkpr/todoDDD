@@ -2,7 +2,6 @@ package auth_jwt
 
 import (
 	"context"
-	"os"
 	"time"
 
 	"todoDB/internal/domain/auth"
@@ -16,33 +15,28 @@ func NewAuthRepository() auth.AuthenticationRepo {
 	return &authRepository{}
 }
 
-var (
-	AccessTokenSecret  string = os.Getenv("ACCESS_TOKEN_SECRET")
-	RefreshTokenSecret string = os.Getenv("REFRESH_TOKEN_SECRET")
-)
-
-func (auth_ptr *authRepository) GenerateAccessToken(ctx context.Context, secret, userID string) (string, error) {
+func (auth_ptr *authRepository) GenerateAccessToken(ctx context.Context, secret, userName string) (string, error) {
 	now := time.Now()
 
 	claims := &auth.Claims{
-		UserID:    userID,
+		UserName:  userName,
 		IssuedAt:  now,
 		ExpiresAt: now.Add(auth.AccressTokenDuration),
 	}
 
-	return GenerateToken(secret, userID, claims)
+	return GenerateToken(secret, userName, claims)
 }
 
-func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret, userID string) (string, error) {
+func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret, userName string) (string, error) {
 	now := time.Now()
 
 	claims := &auth.Claims{
-		UserID:    userID,
+		UserName:  userName,
 		IssuedAt:  now,
 		ExpiresAt: now.Add(auth.RefreshTokenDuration),
 	}
 
-	return GenerateToken(secret, userID, claims)
+	return GenerateToken(secret, userName, claims)
 }
 
 func (auth_ptr *authRepository) ValidateToken(ctx context.Context, secret, tokenStr string) (bool, error) { // checks if the token is singed with the input secret
@@ -53,9 +47,9 @@ func (auth_ptr *authRepository) ValidateToken(ctx context.Context, secret, token
 	return true, nil
 }
 
-func GenerateToken(secret, userID string, claims *auth.Claims) (string, error) {
+func GenerateToken(secret, userName string, claims *auth.Claims) (string, error) {
 	jwtClaims := jwt.MapClaims{
-		"user_id": claims.UserID,
+		"user_id": claims.UserName,
 		"iat":     claims.IssuedAt.Unix(),
 		"exp":     claims.ExpiresAt.Unix(),
 	}
@@ -80,7 +74,7 @@ func ParseToken(secret, tokenStr string) (*auth.Claims, error) {
 	m := t.Claims.(jwt.MapClaims)
 
 	return &auth.Claims{
-		UserID:    m["user_id"].(string),
+		UserName:  m["user_id"].(string),
 		IssuedAt:  time.Unix(int64(m["iat"].(float64)), 0),
 		ExpiresAt: time.Unix(int64(m["exp"].(float64)), 0),
 	}, nil

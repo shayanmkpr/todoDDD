@@ -4,18 +4,19 @@ import (
 	"testing"
 	"time"
 
+	"todoDB/internal/application/user"
 	"todoDB/internal/domain/auth"
 )
 
 func TestGenerateToken(t *testing.T) {
-	secret := AccessTokenSecret
+	secret := user.AccessTokenSecret
 	claims := &auth.Claims{
-		UserID:    "123",
+		UserName:  "123",
 		IssuedAt:  time.Now(),
 		ExpiresAt: time.Now().Add(time.Hour),
 	}
 
-	token, err := GenerateToken(secret, claims.UserID, claims)
+	token, err := GenerateToken(secret, claims.UserName, claims)
 	if err != nil {
 		t.Fatalf("GenerateToken returned error: %v", err)
 	}
@@ -26,15 +27,15 @@ func TestGenerateToken(t *testing.T) {
 }
 
 func TestParseToken(t *testing.T) {
-	secret := AccessTokenSecret
+	secret := user.AccessTokenSecret
 	claims := &auth.Claims{
-		UserID:    "abc",
+		UserName:  "abc",
 		IssuedAt:  time.Now(),
 		ExpiresAt: time.Now().Add(2 * time.Hour),
 	}
 
 	// generate
-	token, err := GenerateToken(secret, claims.UserID, claims)
+	token, err := GenerateToken(secret, claims.UserName, claims)
 	if err != nil {
 		t.Fatalf("GenerateToken error: %v", err)
 	}
@@ -46,8 +47,8 @@ func TestParseToken(t *testing.T) {
 	}
 
 	// compare
-	if parsed.UserID != claims.UserID {
-		t.Errorf("user_id mismatch: got %s, want %s", parsed.UserID, claims.UserID)
+	if parsed.UserName != claims.UserName {
+		t.Errorf("user_id mismatch: got %s, want %s", parsed.UserName, claims.UserName)
 	}
 
 	if !parsed.IssuedAt.Equal(claims.IssuedAt.Truncate(time.Second)) {
@@ -60,7 +61,7 @@ func TestParseToken(t *testing.T) {
 }
 
 func TestParseTokenInvalid(t *testing.T) {
-	secret := AccessTokenSecret
+	secret := user.AccessTokenSecret
 	// totally invalid token string
 	_, err := ParseToken(secret, "not-a-token")
 	if err == nil {

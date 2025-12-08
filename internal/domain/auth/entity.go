@@ -5,7 +5,7 @@ import (
 )
 
 type Claims struct {
-	UserID    string
+	UserName  string
 	IssuedAt  time.Time
 	ExpiresAt time.Time
 }

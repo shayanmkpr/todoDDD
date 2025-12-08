@@ -3,23 +3,34 @@ package user
 import (
 	"context"
 	"errors"
+	"os"
 
+	"todoDB/internal/domain/auth"
 	"todoDB/internal/domain/user"
 )
 
-type Service struct { // initiated a repo that is already defined.
-	repo user.UserRepository
+var (
+	AccessTokenSecret  string = os.Getenv("ACCESS_TOKEN_SECRET")
+	RefreshTokenSecret string = os.Getenv("REFRESH_TOKEN_SECRET")
+)
+
+type UserService struct { // initiated a repo that is already defined.
+	userRepo user.UserRepository
+	authRepo auth.AuthenticationRepo
 }
 
-func NewService(r user.UserRepository) *Service {
-	return &Service{repo: r}
+func NewService(r user.UserRepository, a auth.AuthenticationRepo) *UserService {
+	return &UserService{
+		userRepo: r,
+		authRepo: a,
+	}
 }
 
 // Register registers a new user. But we are not giving them a token right away.
-func (s *Service) Register(ctx context.Context, userName, pass string) (*user.User, error) {
+func (s *UserService) Register(ctx context.Context, userName, pass string) (*user.User, error) {
 
 	// check if user exists
-	userNameExists, err := s.repo.CheckByName(ctx, userName)
+	userNameExists, err := s.userRepo.CheckByName(ctx, userName)
 	if err != nil {
 		return nil, err
 	}
@@ -34,15 +45,15 @@ func (s *Service) Register(ctx context.Context, userName, pass string) (*user.Us
 	}
 
 	// store it and give it an ID
-	if err := s.repo.SaveUser(ctx, u); err != nil {
+	if err := s.userRepo.SaveUser(ctx, u); err != nil {
 		return nil, err
 	}
 	return u, nil
 }
 
-func (s *Service) Login(ctx context.Context, userName, pass string) (string, error) {
+func (s *UserService) Login(ctx context.Context, userName, pass string) (string, error) {
 	// Get the user
-	user, err := s.repo.GetByName(ctx, userName)
+	user, err := s.userRepo.GetByName(ctx, userName)
 	if err != nil {
 		return "", err
 	}
@@ -53,8 +64,12 @@ func (s *Service) Login(ctx context.Context, userName, pass string) (string, err
 	}
 
 	if isCorrectPass {
-		// generate the token
+		token, err := s.authRepo.GenerateAccessToken(ctx, AccessTokenSecret, userName)
+		if err != nil {
+			return "", err
+		}
 		return token, nil
+	} else {
+		return "", errors.New("The password is incorrect")
 	}
-	return token, nil
 }
