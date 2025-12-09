@@ -1,5 +1,0 @@
- 󰜰 UserRepository
-  ├ ƒ UpdateUserName
-  ├ ƒ UpdateUserPass
-  ├ ƒ DeleteUser
-  └ ƒ GetByNme
