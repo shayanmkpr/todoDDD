@@ -50,25 +50,48 @@ func (s *UserService) Register(ctx context.Context, userName, pass string) (*use
 	return u, nil
 }
 
-func (s *UserService) Login(ctx context.Context, userName, pass string) (string, error) {
+func (s *UserService) Login(ctx context.Context, userName, pass string) (string, string, error) {
 	// Get the user
 	user, err := s.userRepo.GetByName(ctx, userName)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	isCorrectPass, err := user.CheckPassword(pass)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	if isCorrectPass {
-		token, err := s.authRepo.GenerateAccessToken(ctx, AccessTokenSecret, userName)
+		accessToken, err := s.authRepo.GenerateAccessToken(ctx, AccessTokenSecret, userName)
+		if err != nil {
+			return "", "", err
+		}
+
+		refreshTken, err := s.authRepo.GenerateRefreshToken(ctx, RefreshTokenSecret, userName)
+		if err != nil {
+			return "", "", err
+		}
+
+		// here should go the stroeRefreshToken logic
+
+		return accessToken, refreshTken, nil
+	} else {
+		return "", "", errors.New("The password is incorrect")
+	}
+}
+
+// takes refresh tokens and gives out access tokens
+func (s *UserService) TokenLogin(ctx context.Context, refreshToken string) (string, error) {
+	inputCalimsPtr, err := s.authRepo.ParseToken(ctx, RefreshTokenSecret, refreshToken)
+	if err != nil {
+		return "", err
+	} else {
+		userName := inputCalimsPtr.UserName
+		newToken, err := s.authRepo.GenerateAccessToken(ctx, AccessTokenSecret, userName)
 		if err != nil {
 			return "", err
 		}
-		return token, nil
-	} else {
-		return "", errors.New("The password is incorrect")
+		return newToken, nil
 	}
 }

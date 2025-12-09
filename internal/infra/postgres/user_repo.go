@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 
 	"todoDB/internal/domain/user"
 
@@ -18,8 +17,6 @@ func NewUserRepository(db *gorm.DB) user.UserRepository {
 }
 
 func (r *userRepository) SaveUser(ctx context.Context, newUser *user.User) error {
-	gormObj := r.db.Create(newUser)
-	fmt.Println(gormObj)
 	return r.db.WithContext(ctx).Create(newUser).Error
 }
 
@@ -44,6 +41,5 @@ func (r *userRepository) CheckByName(ctx context.Context, userName string) (bool
 }
 
 func (r *userRepository) DeleteUser(ctx context.Context, userName string) error {
-	var theUser user.User
-	return r.db.WithContext(ctx).Where("user_name = ?", userName).Delete(&theUser).Error
+	return r.db.WithContext(ctx).Where("user_name = ?", userName).Delete(&user.User{}).Error
 }

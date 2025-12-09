@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type authRepository struct{}
+type authRepository struct{} // the only reason that Im doing this is cause Im trying DDD. This is stupid.
 
 func NewAuthRepository() auth.AuthenticationRepo {
 	return &authRepository{}
@@ -39,14 +39,6 @@ func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret
 	return GenerateToken(secret, userName, claims)
 }
 
-func (auth_ptr *authRepository) ValidateToken(ctx context.Context, secret, tokenStr string) (bool, error) { // checks if the token is singed with the input secret
-	_, err := ParseToken(secret, tokenStr)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
 func GenerateToken(secret, userName string, claims *auth.Claims) (string, error) {
 	jwtClaims := jwt.MapClaims{
 		"user_id": claims.UserName,
@@ -58,11 +50,11 @@ func GenerateToken(secret, userName string, claims *auth.Claims) (string, error)
 	return token.SignedString([]byte(secret))
 }
 
-func ParseToken(secret, tokenStr string) (*auth.Claims, error) {
+func (auth_ptr *authRepository) ParseToken(ctx context.Context, secret, tokenStr string) (*auth.Claims, error) {
 	jwtClaims := jwt.MapClaims{}
 
 	t, err := jwt.ParseWithClaims(tokenStr, jwtClaims,
-		func(t *jwt.Token) (interface{}, error) { // key function
+		func(t *jwt.Token) (interface{}, error) { // key function. this guy checks the secret?
 			return []byte(secret), nil
 		},
 	)

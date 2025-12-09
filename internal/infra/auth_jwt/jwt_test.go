@@ -4,12 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"todoDB/internal/application/user"
+	application "todoDB/internal/application/user"
 	"todoDB/internal/domain/auth"
 )
 
 func TestGenerateToken(t *testing.T) {
-	secret := user.AccessTokenSecret
+	secret := application.AccessTokenSecret
 	claims := &auth.Claims{
 		UserName:  "123",
 		IssuedAt:  time.Now(),
@@ -27,7 +27,7 @@ func TestGenerateToken(t *testing.T) {
 }
 
 func TestParseToken(t *testing.T) {
-	secret := user.AccessTokenSecret
+	secret := application.AccessTokenSecret
 	claims := &auth.Claims{
 		UserName:  "abc",
 		IssuedAt:  time.Now(),
@@ -46,6 +46,9 @@ func TestParseToken(t *testing.T) {
 		t.Fatalf("ParseToken error: %v", err)
 	}
 
+	// fmt.Println(parsed.UserName)
+	// fmt.Printf("parsed: %v\n", parsed)
+
 	// compare
 	if parsed.UserName != claims.UserName {
 		t.Errorf("user_id mismatch: got %s, want %s", parsed.UserName, claims.UserName)
@@ -61,7 +64,7 @@ func TestParseToken(t *testing.T) {
 }
 
 func TestParseTokenInvalid(t *testing.T) {
-	secret := user.AccessTokenSecret
+	secret := application.AccessTokenSecret
 	// totally invalid token string
 	_, err := ParseToken(secret, "not-a-token")
 	if err == nil {

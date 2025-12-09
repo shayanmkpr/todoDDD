@@ -3,13 +3,13 @@ package auth
 import "context"
 
 type RefreshTokenRepo interface { // for postgres
-	StoreRefreshToken(ctx context.Context, token RefreshToken) error
-	GetRefreshToken(ctx context.Context, userName string) (string, error)
+	StoreRefreshToken(ctx context.Context, token *RefreshToken) error
+	GetRefreshToken(ctx context.Context, userName string) (*RefreshToken, error)
 	DeleteRefershToken(ctx context.Context, userName string) error
 }
 
 type AuthenticationRepo interface {
 	GenerateAccessToken(ctx context.Context, secret, userName string) (string, error)
 	GenerateRefreshToken(ctx context.Context, secret, userName string) (string, error)
-	ValidateToken(ctx context.Context, secret, toeknStr string) (bool, error)
+	ParseToken(ctx context.Context, secret, tokenStr string) (*Claims, error)
 }

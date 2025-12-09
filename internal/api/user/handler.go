@@ -26,6 +26,10 @@ type loginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type RefreshTokenRequest struct {
+	Token string `json:"refresh_token" binding:"required"`
+}
+
 func (h *Handler) Register(c *gin.Context) {
 
 	var req registerRequest
@@ -50,11 +54,15 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := h.service.Login(c.Request.Context(), req.Email, req.Password)
+	accessToken, refreshToken, err := h.service.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"access_token": accessToken, "refresh_token": refreshToken})
+}
+
+func (h *Handler) ValidateRefreshToken(c *gin.Context) {
+	// just call the login with refreshtoken
 }

@@ -2,6 +2,8 @@ package auth
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Claims struct {
@@ -10,14 +12,12 @@ type Claims struct {
 	ExpiresAt time.Time
 }
 
-type AccessToken struct {
-	Value  string
-	Claims Claims
-}
-
-type RefreshToken struct { // gormable
-	Value  string
-	Claims Claims
+type RefreshToken struct {
+	gorm.Model
+	Value     string    `gorm:"unique;not null"`
+	UserName  string    `gorm:"not null"`
+	IssuedAt  time.Time `gorm:"not null"`
+	ExpiresAt time.Time `gorm:"not null"`
 }
 
 const (
