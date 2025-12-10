@@ -82,16 +82,18 @@ func (s *UserService) Login(ctx context.Context, userName, pass string) (string,
 }
 
 // takes refresh tokens and gives out access tokens
+// check if the token is there in the db? --> redis
+// check if the token is expired.
+// check if the token is correctly signed?
 func (s *UserService) TokenLogin(ctx context.Context, refreshToken string) (string, error) {
 	inputCalimsPtr, err := s.authRepo.ParseToken(ctx, RefreshTokenSecret, refreshToken)
 	if err != nil {
 		return "", err
-	} else {
-		userName := inputCalimsPtr.UserName
-		newToken, err := s.authRepo.GenerateAccessToken(ctx, AccessTokenSecret, userName)
-		if err != nil {
-			return "", err
-		}
-		return newToken, nil
+	} else if inputCalimsPtr.ExpiresAt // how to check if the expiration has passed?
+	userName := inputCalimsPtr.UserName
+	newToken, err := s.authRepo.GenerateAccessToken(ctx, AccessTokenSecret, userName)
+	if err != nil {
+		return "", err
 	}
+	return newToken, nil
 }

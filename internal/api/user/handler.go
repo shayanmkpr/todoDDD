@@ -31,7 +31,6 @@ type RefreshTokenRequest struct {
 }
 
 func (h *Handler) Register(c *gin.Context) {
-
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -40,7 +39,7 @@ func (h *Handler) Register(c *gin.Context) {
 
 	user, err := h.service.Register(c.Request.Context(), req.UserName, req.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
@@ -56,7 +55,7 @@ func (h *Handler) Login(c *gin.Context) {
 
 	accessToken, refreshToken, err := h.service.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
 		return
 	}
 
@@ -64,5 +63,15 @@ func (h *Handler) Login(c *gin.Context) {
 }
 
 func (h *Handler) ValidateRefreshToken(c *gin.Context) {
-	// just call the login with refreshtoken
+	var req RefreshTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	newAcessToken, err := h.service.TokenLogin(c.Request.Context(), req.Token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"access_token": newAcessToken})
 }
