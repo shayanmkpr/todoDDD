@@ -1,4 +1,4 @@
-package redisdb
+package redis
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type refreshTokenRepo struct {
 	rdb *redis.Client
 }
 
-func NewAuthPostgresRepository(rdb *redis.Client) auth.RefreshTokenRepo {
+func NewRdbRepository(rdb *redis.Client) auth.RefreshTokenRepo {
 	return &refreshTokenRepo{rdb: rdb}
 }
 

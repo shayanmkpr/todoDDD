@@ -1,9 +1,9 @@
 package todo
 
 type Todo struct {
-	TodoID int `json:"todo_id"`
-	Tasks  []*Task
-	UserID int `json:"user_id"`
+	TodoID   int `json:"todo_id"`
+	Tasks    []*Task
+	userName int `json:"user_name"`
 }
 
 type Task struct {

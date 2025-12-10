@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"time"
 
 	"todoDB/internal/domain/auth"
 	"todoDB/internal/domain/user"
@@ -15,14 +16,16 @@ var (
 )
 
 type UserService struct { // initiated a repo that is already defined.
-	userRepo user.UserRepository
-	authRepo auth.AuthenticationRepo
+	refreshRepo auth.RefreshTokenRepo
+	authRepo    auth.AuthenticationRepo
+	userRepo    user.UserRepository
 }
 
-func NewService(r user.UserRepository, a auth.AuthenticationRepo) *UserService {
+func NewService(r user.UserRepository, a auth.AuthenticationRepo, ref auth.RefreshTokenRepo) *UserService {
 	return &UserService{
-		userRepo: r,
-		authRepo: a,
+		refreshRepo: ref,
+		userRepo:    r,
+		authRepo:    a,
 	}
 }
 
@@ -34,7 +37,7 @@ func (s *UserService) Register(ctx context.Context, userName, pass string) (*use
 		return nil, err
 	}
 	if userNameExists {
-		return nil, errors.New("email already registered")
+		return nil, errors.New("user name already registered")
 	}
 
 	// domain creates the user object
@@ -77,19 +80,25 @@ func (s *UserService) Login(ctx context.Context, userName, pass string) (string,
 
 		return accessToken, refreshTken, nil
 	} else {
-		return "", "", errors.New("The password is incorrect")
+		return "", "", errors.New("the password is incorrect")
 	}
 }
 
-// takes refresh tokens and gives out access tokens
-// check if the token is there in the db? --> redis
-// check if the token is expired.
 // check if the token is correctly signed?
 func (s *UserService) TokenLogin(ctx context.Context, refreshToken string) (string, error) {
 	inputCalimsPtr, err := s.authRepo.ParseToken(ctx, RefreshTokenSecret, refreshToken)
 	if err != nil {
 		return "", err
-	} else if inputCalimsPtr.ExpiresAt // how to check if the expiration has passed?
+	}
+	// check with redis. --> call the auth_redis_repo
+	refreshTokenParsed, err := s.refreshRepo.GetRefreshToken(ctx, refreshToken)
+	if err != nil {
+		return "", err
+	}
+
+	if refreshTokenParsed.ExpiresAt.Before(time.Now()) {
+		return "", errors.New("the refresh token has expired. Need to login manually again")
+	}
 	userName := inputCalimsPtr.UserName
 	newToken, err := s.authRepo.GenerateAccessToken(ctx, AccessTokenSecret, userName)
 	if err != nil {

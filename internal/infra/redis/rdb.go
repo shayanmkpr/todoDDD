@@ -1,4 +1,4 @@
-package redisdb
+package redis
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func NewClient() *redis.Client {
+func NewrdbClient() *redis.Client {
 	rdbAddress := os.Getenv("REDIS_ADDRESS")
 	redbPass := os.Getenv("REDIS_PASS")
 	rdb := redis.NewClient(&redis.Options{

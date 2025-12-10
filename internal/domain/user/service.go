@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -32,10 +33,13 @@ func (u *User) CheckPassword(inputPass string) (bool, error) {
 	if inputPass == "" {
 		return false, errors.New("input pass is empty")
 	}
+
 	err := bcrypt.CompareHashAndPassword([]byte(u.Pass), []byte(inputPass))
-	if err == nil {
-		return true, nil
-	} else {
-		return false, err
+	if err != nil {
+		fmt.Println(err)
+		// password mismatch (not a server error)
+		return false, nil
 	}
+
+	return true, nil
 }

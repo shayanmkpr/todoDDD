@@ -63,3 +63,6 @@ Thumbs.db
 # Local configuration files
 config.local.*
 local.properties
+
+#debug
+*debug*

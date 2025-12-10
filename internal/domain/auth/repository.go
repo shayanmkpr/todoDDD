@@ -4,8 +4,8 @@ import "context"
 
 type RefreshTokenRepo interface { // for postgres
 	StoreRefreshToken(ctx context.Context, token *RefreshToken) error
-	GetRefreshToken(ctx context.Context, userName string) (*RefreshToken, error)
-	DeleteRefershToken(ctx context.Context, userName string) error
+	GetRefreshToken(ctx context.Context, tokenValue string) (*RefreshToken, error)
+	DeleteRefershToken(ctx context.Context, tokenValue string) error
 }
 
 type AuthenticationRepo interface {

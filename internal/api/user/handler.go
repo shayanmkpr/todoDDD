@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	application "todoDB/internal/application/user"
@@ -17,12 +18,12 @@ func NewHandler(s *application.UserService) *Handler {
 }
 
 type registerRequest struct {
-	UserName string `json:"user_name" binding:"required,email"`
+	UserName string `json:"user_name" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
 type loginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
+	UserName string `json:"user_name" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -31,6 +32,9 @@ type RefreshTokenRequest struct {
 }
 
 func (h *Handler) Register(c *gin.Context) {
+	fmt.Println("--------------------------")
+	fmt.Println("register")
+	fmt.Println("--------------------------")
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -47,13 +51,16 @@ func (h *Handler) Register(c *gin.Context) {
 }
 
 func (h *Handler) Login(c *gin.Context) {
+	fmt.Println("--------------------------")
+	fmt.Println("login")
+	fmt.Println("--------------------------")
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	accessToken, refreshToken, err := h.service.Login(c.Request.Context(), req.Email, req.Password)
+	accessToken, refreshToken, err := h.service.Login(c.Request.Context(), req.UserName, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
 		return
