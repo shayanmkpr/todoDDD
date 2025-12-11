@@ -12,5 +12,6 @@ func RegisterRoutes(r *gin.Engine, h *Handler) {
 	{
 		g.POST("/register", h.Register)
 		g.POST("/login", h.Login)
+		g.POST("/ref", h.ValidateRefreshToken)
 	}
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -29,6 +30,7 @@ func main() {
 	}
 
 	rdb := redis.NewrdbClient()
+	fmt.Println(rdb.Ping(context.Background()).Err())
 	userRepo := postgres.NewUserRepository(db)
 	authRepo := auth_jwt.NewAuthRepository()
 	refRepo := redis.NewRdbRepository(rdb)

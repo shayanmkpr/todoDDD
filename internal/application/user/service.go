@@ -76,7 +76,7 @@ func (s *UserService) Login(ctx context.Context, userName, pass string) (string,
 			return "", "", err
 		}
 
-		// here should go the stroeRefreshToken logic
+		s.refreshRepo.StoreRefreshToken(ctx, refreshTken)
 
 		return accessToken, refreshTken, nil
 	} else {
@@ -90,7 +90,7 @@ func (s *UserService) TokenLogin(ctx context.Context, refreshToken string) (stri
 	if err != nil {
 		return "", err
 	}
-	// check with redis. --> call the auth_redis_repo
+
 	refreshTokenParsed, err := s.refreshRepo.GetRefreshToken(ctx, refreshToken)
 	if err != nil {
 		return "", err

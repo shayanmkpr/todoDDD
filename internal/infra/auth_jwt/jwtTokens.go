@@ -27,7 +27,7 @@ func (auth_ptr *authRepository) GenerateAccessToken(ctx context.Context, secret,
 	return GenerateToken(secret, userName, claims)
 }
 
-func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret, userName string) (string, error) {
+func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret, userName string) (auth.RefreshToken, error) {
 	now := time.Now()
 
 	claims := &auth.Claims{
@@ -36,7 +36,11 @@ func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret
 		ExpiresAt: now.Add(auth.RefreshTokenDuration),
 	}
 
-	return GenerateToken(secret, userName, claims)
+	tokenString, err := GenerateToken(secret, userName, claims)
+	if err != nil {
+	}
+
+	return
 }
 
 func GenerateToken(secret, userName string, claims *auth.Claims) (string, error) {

@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 	"todoDB/internal/domain/auth"
@@ -35,7 +36,6 @@ func (t *refreshTokenRepo) StoreRefreshToken(ctx context.Context, token *auth.Re
 	if err != nil {
 		return err
 	}
-	t.rdb.Expire(ctx, key, ttl)
 	return nil
 }
 
@@ -47,6 +47,7 @@ func (t *refreshTokenRepo) GetRefreshToken(ctx context.Context, tokenValue strin
 	}
 
 	if len(hashToken) == 0 { // what?
+		fmt.Println(hashToken)
 		return nil, errors.New("Record not set correctly")
 	}
 

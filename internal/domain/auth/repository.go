@@ -10,6 +10,6 @@ type RefreshTokenRepo interface { // for postgres
 
 type AuthenticationRepo interface {
 	GenerateAccessToken(ctx context.Context, secret, userName string) (string, error)
-	GenerateRefreshToken(ctx context.Context, secret, userName string) (string, error)
+	GenerateRefreshToken(ctx context.Context, secret, userName string) (RefreshToken, error)
 	ParseToken(ctx context.Context, secret, tokenStr string) (*Claims, error)
 }
