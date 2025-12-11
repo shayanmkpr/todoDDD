@@ -9,6 +9,9 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+// GenerateAccessToken(ctx context.Context, secret, userName string) (string, error)
+// GenerateRefreshToken(ctx context.Context, secret, userName string) (RefreshToken, error)
+// ParseToken(ctx context.Context, secret, tokenStr string) (*Claims, error)
 type authRepository struct{} // the only reason that Im doing this is cause Im trying DDD. This is stupid.
 
 func NewAuthRepository() auth.AuthenticationRepo {
@@ -27,7 +30,7 @@ func (auth_ptr *authRepository) GenerateAccessToken(ctx context.Context, secret,
 	return GenerateToken(secret, userName, claims)
 }
 
-func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret, userName string) (auth.RefreshToken, error) {
+func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret, userName string) (*auth.RefreshToken, error) {
 	now := time.Now()
 
 	claims := &auth.Claims{
@@ -38,9 +41,15 @@ func (auth_ptr *authRepository) GenerateRefreshToken(ctx context.Context, secret
 
 	tokenString, err := GenerateToken(secret, userName, claims)
 	if err != nil {
+		return &auth.RefreshToken{}, nil
 	}
 
-	return
+	refreshToken := &auth.RefreshToken{
+		Value:     tokenString,
+		UserName:  userName,
+		ExpiresAt: now.Add(auth.RefreshTokenDuration),
+	}
+	return refreshToken, nil
 }
 
 func GenerateToken(secret, userName string, claims *auth.Claims) (string, error) {

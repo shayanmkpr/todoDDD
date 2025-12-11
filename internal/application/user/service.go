@@ -53,34 +53,34 @@ func (s *UserService) Register(ctx context.Context, userName, pass string) (*use
 	return u, nil
 }
 
-func (s *UserService) Login(ctx context.Context, userName, pass string) (string, string, error) {
+func (s *UserService) Login(ctx context.Context, userName, pass string) (string, *auth.RefreshToken, error) {
 	// Get the user
 	user, err := s.userRepo.GetByName(ctx, userName)
 	if err != nil {
-		return "", "", err
+		return "", &auth.RefreshToken{}, err
 	}
 
 	isCorrectPass, err := user.CheckPassword(pass)
 	if err != nil {
-		return "", "", err
+		return "", &auth.RefreshToken{}, err
 	}
 
 	if isCorrectPass {
 		accessToken, err := s.authRepo.GenerateAccessToken(ctx, AccessTokenSecret, userName)
 		if err != nil {
-			return "", "", err
+			return "", &auth.RefreshToken{}, err
 		}
 
 		refreshTken, err := s.authRepo.GenerateRefreshToken(ctx, RefreshTokenSecret, userName)
 		if err != nil {
-			return "", "", err
+			return "", &auth.RefreshToken{}, err
 		}
 
 		s.refreshRepo.StoreRefreshToken(ctx, refreshTken)
 
 		return accessToken, refreshTken, nil
 	} else {
-		return "", "", errors.New("the password is incorrect")
+		return "", &auth.RefreshToken{}, errors.New("the password is incorrect")
 	}
 }
 
