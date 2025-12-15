@@ -18,7 +18,6 @@ import (
 )
 
 func main() {
-	// get the db as an object
 	db, err := postgres.NewPostgres()
 	if err != nil {
 		log.Fatal(err)
