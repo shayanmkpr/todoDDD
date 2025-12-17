@@ -10,7 +10,7 @@ import (
 )
 
 func NewPostgres() (*gorm.DB, error) {
-	dsn := os.Getenv("DATABASE_URL")
+	dsn := os.Getenv("POSTGRES_URL")
 	if dsn == "" {
 		return nil, errors.New("dsn is empty")
 	}

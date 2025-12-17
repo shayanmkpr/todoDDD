@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"todoDB/internal/domain/auth"
@@ -58,37 +59,38 @@ func (t *refreshTokenRepo) StoreRefreshToken(ctx context.Context, token *auth.Re
 	return err
 }
 
-func (t *refreshTokenRepo) GetRefreshToken(ctx context.Context, tokenValue string) (string, error) {
+func (t *refreshTokenRepo) GetRefreshToken(ctx context.Context, tokenValue string) (*auth.RefreshToken, error) {
 	key := "refresh:" + tokenValue
 	hashToken, err := t.rdb.HGetAll(ctx, key).Result()
-	if err != nil {
-		return "", err
-	}
-
-	if len(hashToken) == 0 { // what?
-		return "", errors.New("Record not set correctly")
-	}
-
-	return hashToken["value"], nil
-}
-
-// make sure the token coming from redis is actually a string
-func (t *refreshTokenRepo) GetRefreshTokenByName(ctx context.Context, userName string) (*auth.RefreshToken, error) {
-	key := "user:" + userName
-	token, err := t.rdb.Get(ctx, key).Result() // token is a string
 	if err != nil {
 		return nil, err
 	}
 
-	if len(token) == 0 { // what?
+	if len(hashToken) == 0 { // what?
 		return nil, errors.New("Record not set correctly")
 	}
 
+	// convert time to time.Time
+	expUnix, err := strconv.ParseInt(hashToken["expiresAt"], 10, 64)
+
 	return &auth.RefreshToken{
-		Value:     token,
-		UserName:  userName,
-		ExpiresAt: time.Now(),
+		Value:     hashToken["value"],
+		UserName:  hashToken["userName"],
+		ExpiresAt: time.Unix(expUnix, 0),
 	}, nil
+}
+
+// make sure the token coming from redis is actually a string
+func (t *refreshTokenRepo) GetRefreshTokenByName(ctx context.Context, userName string) (string, error) {
+	key := "user:" + userName
+	token, err := t.rdb.Get(ctx, key).Result() // token is a string
+	if err != nil {
+		return "", err
+	}
+	if len(token) == 0 {
+		return "", errors.New("Record not set correctly")
+	}
+	return token, nil
 }
 
 func (t *refreshTokenRepo) DeleteRefershToken(ctx context.Context, tokenValue string) error {

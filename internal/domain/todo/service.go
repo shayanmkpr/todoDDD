@@ -12,7 +12,7 @@ func (t *Todo) AddTask(newTask *Task) error {
 
 func (t *Todo) RemoveTaskByID(taskID int) error {
 	for i, task := range t.Tasks {
-		if task.ID == taskID {
+		if task.TaksID == taskID {
 			t.Tasks = append(t.Tasks[:i], t.Tasks[:i+1]...)
 			return nil
 		}
