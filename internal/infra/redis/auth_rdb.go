@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
+
 	"todoDB/internal/domain/auth"
 
 	"github.com/redis/go-redis/v9"
@@ -29,6 +29,7 @@ func (t *refreshTokenRepo) StoreRefreshToken(ctx context.Context, token *auth.Re
 	tokenKey := "refresh:" + token.Value
 	userKey := "user:" + token.UserName + ":refresh"
 
+	// this should be checked. There should be two main relations, one with user object and a key, and another with the key and the user name of a registered user object.
 	script := redis.NewScript(`
 		redis.call("HSET", KEYS[1],
 			"value", ARGV[1],
@@ -57,31 +58,24 @@ func (t *refreshTokenRepo) StoreRefreshToken(ctx context.Context, token *auth.Re
 	return err
 }
 
-func (t *refreshTokenRepo) GetRefreshToken(ctx context.Context, tokenValue string) (*auth.RefreshToken, error) {
+func (t *refreshTokenRepo) GetRefreshToken(ctx context.Context, tokenValue string) (string, error) {
 	key := "refresh:" + tokenValue
 	hashToken, err := t.rdb.HGetAll(ctx, key).Result()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if len(hashToken) == 0 { // what?
-		return nil, errors.New("Record not set correctly")
+		return "", errors.New("Record not set correctly")
 	}
 
-	//convert time to time.Time
-	expUnix, err := strconv.ParseInt(hashToken["expiresAt"], 10, 64)
-
-	return &auth.RefreshToken{
-		Value:     hashToken["value"],
-		UserName:  hashToken["userName"],
-		ExpiresAt: time.Unix(expUnix, 0),
-	}, nil
+	return hashToken["value"], nil
 }
 
 // make sure the token coming from redis is actually a string
 func (t *refreshTokenRepo) GetRefreshTokenByName(ctx context.Context, userName string) (*auth.RefreshToken, error) {
 	key := "user:" + userName
-	token, err := t.rdb.Get(ctx, key).Result()
+	token, err := t.rdb.Get(ctx, key).Result() // token is a string
 	if err != nil {
 		return nil, err
 	}
@@ -90,13 +84,10 @@ func (t *refreshTokenRepo) GetRefreshTokenByName(ctx context.Context, userName s
 		return nil, errors.New("Record not set correctly")
 	}
 
-	//convert time to time.Time
-	expUnix, err := strconv.ParseInt(token, 10, 64)
-
 	return &auth.RefreshToken{
-		Value:     token["value"],
-		UserName:  token["userName"],
-		ExpiresAt: time.Unix(expUnix, 0),
+		Value:     token,
+		UserName:  userName,
+		ExpiresAt: time.Now(),
 	}, nil
 }
 
