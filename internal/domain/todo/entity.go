@@ -3,7 +3,7 @@ package todo
 type Todo struct {
 	TodoID   int `json:"todo_id" binding:"required"`
 	Tasks    []*Task
-	UserName int `json:"user_name" binding:"required"`
+	UserName string `json:"user_name" binding:"required"`
 }
 
 type Task struct {
