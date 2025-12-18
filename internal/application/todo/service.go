@@ -20,7 +20,7 @@ func NewTodoService(t todo.TodoRepository, a auth.AuthenticationRepo) *TodoServi
 	}
 }
 
-func (s *TodoServices) CreateTodo(ctx context.Context, userName string, firstTask *todo.Task) error {
+func (s *TodoServices) CreateTodo(ctx context.Context, userName string, firstTask *todo.Task, token auth.) error {
 	err := s.todoRepo.CreateTodo(ctx, &todo.Todo{UserName: userName})
 	if err != nil {
 		return err
