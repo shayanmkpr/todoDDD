@@ -108,6 +108,10 @@ func (s *UserService) TokenLogin(ctx context.Context, refreshToken string) (stri
 	return newToken, nil
 }
 
-func (s *UserService) ValidateAccessToken(ctx context.Context, accessToken string) error {
-	// parse the thing here. should be used in the handler of the authenitcation middleware in api.
+func (s *UserService) ValidateAccessToken(ctx context.Context, accessToken string) (*auth.Claims, error) {
+	tokenClaims, err := s.authRepo.ParseToken(ctx, AccessTokenSecret, accessToken)
+	if err != nil {
+		return &auth.Claims{}, nil
+	}
+	return tokenClaims, nil
 }

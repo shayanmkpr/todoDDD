@@ -7,7 +7,8 @@ import (
 	"io"
 	"log"
 
-	api "todoDB/internal/api/user"
+	authApi "todoDB/internal/api/middleware"
+	userApi "todoDB/internal/api/user"
 	application "todoDB/internal/application/user"
 	user "todoDB/internal/domain/user"
 	"todoDB/internal/infra/auth_jwt"
@@ -18,6 +19,7 @@ import (
 )
 
 func main() {
+
 	db, err := postgres.NewPostgres()
 	if err != nil {
 		log.Fatal(err)
@@ -29,12 +31,19 @@ func main() {
 	}
 
 	rdb := redis.NewrdbClient()
-	fmt.Println(rdb.Ping(context.Background()).Err())
+	rdbErr := rdb.Ping(context.Background()).Err()
+	if rdbErr != nil {
+		log.Println(rdbErr)
+		fmt.Println(rdbErr)
+	}
+
 	userRepo := postgres.NewUserRepository(db)
 	authRepo := auth_jwt.NewAuthRepository()
 	refRepo := redis.NewRdbRepository(rdb)
+
 	userService := application.NewService(userRepo, authRepo, refRepo)
-	userHandler := api.NewHandler(userService)
+	userHandler := userApi.NewHandler(userService)
+	authHandler := authApi.NewAuthHandler(userService)
 
 	r := gin.Default()
 
@@ -51,7 +60,10 @@ func main() {
 		c.Next()
 	})
 
-	api.RegisterRoutes(r, userHandler)
+	protectedGroup := r.Group()
+
+	authHandler.AuthMiddleware()
+	userApi.RegisterRoutes(r, userHandler)
 
 	r.Run(":8080")
 }

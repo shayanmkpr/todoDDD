@@ -1,15 +1,26 @@
 package api
 
 import (
+	"context"
 	"net/http"
 
-	"todoDB/internal/infra/auth_jwt"
+	application "todoDB/internal/application/user"
 
 	"github.com/gin-gonic/gin"
 )
 
+type AuthHandler struct {
+	authService *application.UserService
+}
+
+func NewAuthHandler(s *application.UserService) *AuthHandler {
+	return &AuthHandler{
+		authService: s,
+	}
+}
+
 // AuthMiddleware parses and validates JWT
-func AuthMiddleware() gin.HandlerFunc {
+func (a *AuthHandler) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 		if token == "" {
@@ -17,21 +28,20 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		authClaims, err := auth_jwt.Par(token)
+		authClaims, err := a.authService.ValidateAccessToken(context.Background(), token) // not sure about this
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			return
 		}
 
 		// attach user info to context
-		c.Set("userID", userID)
+		c.Set("userName", authClaims.UserName)
 		c.Next()
 	}
 }
 
-// FromContext retrieves user ID from Gin context
 func FromContext(c *gin.Context) string {
-	user, _ := c.Get("userID")
+	user, _ := c.Get("userName")
 	if userID, ok := user.(string); ok {
 		return userID
 	}
