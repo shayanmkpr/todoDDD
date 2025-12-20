@@ -39,7 +39,7 @@ func (a *AuthHandler) AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func FromContext(c *gin.Context) string {
+func UserNameFromContext(c *gin.Context) string {
 	user, _ := c.Get("userName")
 	if userID, ok := user.(string); ok {
 		return userID

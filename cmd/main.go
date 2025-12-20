@@ -67,12 +67,17 @@ func main() {
 		c.Next()
 	})
 
-	protectedGroup := r.Group("/user")
-	protectedGroup.Use(authHandler.AuthMiddleware())
-	// protectedGroup.Use(todoHandler.GetAllTodo(ctx, ))
+	// routing
 
-	authHandler.AuthMiddleware()
-	userApi.RegisterRoutes(r, userHandler)
+	protectedGroup := r.Group("/user") // anyting going through the /user/ domain layer will be protected according to the correspoding user.
+	fmt.Println("Assigning the authentication middleware ...")
+	protectedGroup.Use(authHandler.AuthMiddleware())
+
+	todoGroup := protectedGroup.Group("/todo")
+	todoApi.RegisterTodoRoutes(todoGroup, todoHandler)
+
+	unprotectedGroup := r.Group("/auth")
+	userApi.RegisterUserRoutes(unprotectedGroup, userHandler)
 
 	r.Run(":8080")
 }

@@ -6,9 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(r *gin.Engine, h *Handler) {
-	fmt.Println("Registering the routs...")
-	g := r.Group("/users")
+func RegisterUserRoutes(g *gin.RouterGroup, h *Handler) {
+	fmt.Println("User Routes")
 	{
 		g.POST("/register", h.Register)
 		g.POST("/login", h.Login)
