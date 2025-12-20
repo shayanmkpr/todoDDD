@@ -6,6 +6,7 @@ import (
 
 	authMiddleware "todoDB/internal/api/middleware"
 	application "todoDB/internal/application/todo"
+	"todoDB/internal/domain/todo"
 
 	"github.com/gin-gonic/gin"
 )

@@ -10,12 +10,13 @@ func (t *Todo) AddTask(newTask *Task) error {
 	return nil
 }
 
-func (t *Todo) RemoveTaskByID(taskID int) error {
+func (t *Todo) RemoveTaskByID(taskID uint) error {
 	for i, task := range t.Tasks {
-		if task.TaksID == taskID {
-			t.Tasks = append(t.Tasks[:i], t.Tasks[:i+1]...)
+		if task.ID == taskID {
+			// Remove element at index i
+			t.Tasks = append(t.Tasks[:i], t.Tasks[i+1:]...)
 			return nil
 		}
 	}
-	return errors.New("no Such task was found in the todo list")
+	return errors.New("no such task was found in the todo list")
 }
