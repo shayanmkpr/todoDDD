@@ -8,8 +8,10 @@ import (
 	"log"
 
 	authApi "todoDB/internal/api/middleware"
+	todoApi "todoDB/internal/api/todo"
 	userApi "todoDB/internal/api/user"
-	application "todoDB/internal/application/user"
+	todoApplication "todoDB/internal/application/todo"
+	userApplication "todoDB/internal/application/user"
 	user "todoDB/internal/domain/user"
 	"todoDB/internal/infra/auth_jwt"
 	"todoDB/internal/infra/postgres"
@@ -19,7 +21,7 @@ import (
 )
 
 func main() {
-
+	// initializing postgres
 	db, err := postgres.NewPostgres()
 	if err != nil {
 		log.Fatal(err)
@@ -30,6 +32,7 @@ func main() {
 		fmt.Println("automigration complete")
 	}
 
+	// initializing redis
 	rdb := redis.NewrdbClient()
 	rdbErr := rdb.Ping(context.Background()).Err()
 	if rdbErr != nil {
@@ -38,12 +41,16 @@ func main() {
 	}
 
 	userRepo := postgres.NewUserRepository(db)
+	todoRepo := postgres.NewTodoRepository(db)
 	authRepo := auth_jwt.NewAuthRepository()
 	refRepo := redis.NewRdbRepository(rdb)
 
-	userService := application.NewService(userRepo, authRepo, refRepo)
+	userService := userApplication.NewService(userRepo, authRepo, refRepo)
+	todoService := todoApplication.NewTodoService(todoRepo, authRepo)
+
 	userHandler := userApi.NewHandler(userService)
 	authHandler := authApi.NewAuthHandler(userService)
+	todoHandler := todoApi.NewTodoHandler(todoService)
 
 	r := gin.Default()
 
@@ -60,7 +67,9 @@ func main() {
 		c.Next()
 	})
 
-	protectedGroup := r.Group()
+	protectedGroup := r.Group("/user")
+	protectedGroup.Use(authHandler.AuthMiddleware())
+	// protectedGroup.Use(todoHandler.GetAllTodo(ctx, ))
 
 	authHandler.AuthMiddleware()
 	userApi.RegisterRoutes(r, userHandler)

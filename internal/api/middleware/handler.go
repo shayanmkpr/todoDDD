@@ -19,7 +19,6 @@ func NewAuthHandler(s *application.UserService) *AuthHandler {
 	}
 }
 
-// AuthMiddleware parses and validates JWT
 func (a *AuthHandler) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
