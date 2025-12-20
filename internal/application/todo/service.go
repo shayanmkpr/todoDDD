@@ -21,7 +21,7 @@ func NewTodoService(t todo.TodoRepository, a auth.AuthenticationRepo) *TodoServi
 }
 
 func (s *TodoServices) CreateTodo(ctx context.Context, userName string, title string) error {
-	err := s.todoRepo.CreateTodo(ctx, &todo.Todo{UserName: userName})
+	err := s.todoRepo.CreateTodo(ctx, &todo.Todo{UserName: userName, Title: title})
 	if err != nil {
 		return err
 	}
@@ -36,22 +36,23 @@ func (s *TodoServices) RemoveTodo(ctx context.Context, todoID int) error {
 	return nil
 }
 
-func (s *TodoServices) GetTodoByUserName(ctx context.Context, userName string) (*todo.Todo, error) {
-	theTodo, err := s.todoRepo.GetAllByUserName(ctx, userName)
+func (s *TodoServices) GetTodoByUserName(ctx context.Context, userName string) ([]*todo.Todo, error) {
+	todos, err := s.todoRepo.GetAllByUserName(ctx, userName)
 	if err != nil {
-		return &todo.Todo{}, err
+		return nil, err
 	}
-	return theTodo, nil
+	return todos, nil
 }
 
 func (s *TodoServices) AddTask(ctx context.Context, todoID int, task *todo.Task) error {
-	return nil
+	task.TodoID = uint(todoID)
+	return s.todoRepo.AddTask(ctx, task)
 }
 
 func (s *TodoServices) UpdateTask(ctx context.Context, task *todo.Task) error {
-	return nil
+	return s.todoRepo.UpdateTask(ctx, task)
 }
 
 func (s *TodoServices) DeleteTask(ctx context.Context, taskID int) error {
-	return nil
+	return s.todoRepo.DeleteTask(ctx, taskID)
 }

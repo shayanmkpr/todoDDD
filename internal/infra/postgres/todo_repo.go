@@ -13,24 +13,24 @@ type todoRepository struct {
 }
 
 func NewTodoRepository(db *gorm.DB) todo.TodoRepository {
-	return &todoRepository{db: db.Model(&todo.Todo{})}
+	return &todoRepository{db: db}
 }
 
-func (t *todoRepository) UpdateTodo(ctx context.Context, todo *todo.Task) error { // should check this update and save logic relation ship
+func (t *todoRepository) UpdateTodo(ctx context.Context, todo *todo.Todo) error {
 	return t.db.WithContext(ctx).Save(todo).Error
 }
 
-func (t *todoRepository) CreateTodo(ctx context.Context, todo *todo.Todo) error { // just makes an empty todo. not sure if I want to insert some tasks as well. maybe a single one.
+func (t *todoRepository) CreateTodo(ctx context.Context, todo *todo.Todo) error {
 	return t.db.WithContext(ctx).Create(todo).Error
 }
 
 func (t *todoRepository) DeleteTodoByID(ctx context.Context, todoListID int) error {
-	return t.db.WithContext(ctx).Where("todo_id = ?", todoListID).Delete(&todo.Todo{}).Error
+	return t.db.WithContext(ctx).Delete(&todo.Todo{}, todoListID).Error
 }
 
-func (t *todoRepository) GetByID(ctx context.Context, todoList *todo.Todo) (*todo.Todo, error) {
+func (t *todoRepository) GetByID(ctx context.Context, todoListID int) (*todo.Todo, error) {
 	var theTodo todo.Todo
-	err := t.db.WithContext(ctx).Where("id = ?", todoList.TodoID).First(&theTodo).Error
+	err := t.db.WithContext(ctx).Preload("Tasks").First(&theTodo, todoListID).Error
 	if err != nil {
 		return nil, err
 	} else {
@@ -38,12 +38,24 @@ func (t *todoRepository) GetByID(ctx context.Context, todoList *todo.Todo) (*tod
 	}
 }
 
-func (t *todoRepository) GetAllByUserName(ctx context.Context, userName string) (*todo.Todo, error) {
-	var theTodo todo.Todo
-	err := t.db.WithContext(ctx).Where("user_name = ?", userName).First(&theTodo).Error
+func (t *todoRepository) GetAllByUserName(ctx context.Context, userName string) ([]*todo.Todo, error) {
+	var todos []*todo.Todo
+	err := t.db.WithContext(ctx).Preload("Tasks").Where("user_name = ?", userName).Find(&todos).Error
 	if err != nil {
 		return nil, err
 	} else {
-		return &theTodo, nil
+		return todos, nil
 	}
+}
+
+func (t *todoRepository) AddTask(ctx context.Context, task *todo.Task) error {
+	return t.db.WithContext(ctx).Create(task).Error
+}
+
+func (t *todoRepository) UpdateTask(ctx context.Context, task *todo.Task) error {
+	return t.db.WithContext(ctx).Save(task).Error
+}
+
+func (t *todoRepository) DeleteTask(ctx context.Context, taskID int) error {
+	return t.db.WithContext(ctx).Delete(&todo.Task{}, taskID).Error
 }

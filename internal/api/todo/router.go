@@ -11,5 +11,10 @@ func RegisterTodoRoutes(g *gin.RouterGroup, h *todoHandler) {
 	{
 		g.GET("/", h.GetUserTodo)
 		g.POST("/", h.CreateTodo)
+
+		// Task routes
+		g.POST("/:todo_id/tasks", h.AddTask)
+		g.PUT("/tasks", h.UpdateTask)
+		g.DELETE("/tasks/:task_id", h.DeleteTask)
 	}
 }
